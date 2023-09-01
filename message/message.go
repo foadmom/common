@@ -1,9 +1,9 @@
 package message
 
 import (
+	"encoding/json"
 	"time"
 
-	"github.com/foadmom/common/utils"
 	c "github.com/foadmom/common/utils"
 )
 
@@ -52,7 +52,7 @@ type GenericMessage struct {
 func (h *MessageHeader) Instance() error {
 	var _err error
 
-	h.UUID, _err = utils.GenerateUUID()
+	h.UUID, _err = c.GenerateUUID()
 	if _err == nil {
 		h.Version = VERSION
 		h.Host = c.HostName()
@@ -62,7 +62,9 @@ func (h *MessageHeader) Instance() error {
 }
 
 // ========================================================
-//
+// create and instance of GenericMessage with whatever
+// defaults we know before specifics are populated by
+// the app
 // ========================================================
 func (g *GenericMessage) Instance() error {
 	var _header MessageHeader
@@ -73,4 +75,20 @@ func (g *GenericMessage) Instance() error {
 	}
 
 	return _err
+}
+
+// ========================================================
+// Marshall a GenericMessage
+// ========================================================
+func (gm GenericMessage) JSONMarshal() ([]byte, error) {
+
+	return json.Marshal(gm)
+}
+
+// ========================================================
+// Unmarshall a GenericMessage
+// ========================================================
+func (gm *GenericMessage) JSONUnmarshal(buffer []byte) error {
+
+	return json.Unmarshal(buffer, gm)
 }

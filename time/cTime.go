@@ -39,6 +39,13 @@ type UTCTime time.Time
 const UTCLayout = "2006-01-02T15:04:05.000000"
 
 // ========================================================
+// UTCTime.Now()
+// ========================================================
+func Now() UTCTime {
+	return UTCTime(time.Now())
+}
+
+// ========================================================
 // JSON Unmarshal for custum time UTCTime
 // ========================================================
 func (t *UTCTime) UnmarshalJSON(b []byte) (err error) {
