@@ -7,15 +7,6 @@ import (
 	c "github.com/foadmom/common/utils"
 )
 
-const HEART_BEAT_MESSAGE_CODE = "HeartBeat"
-
-const ACTIVE = "active"
-const DRAINING = "draining"
-const DRAINED = "drained"
-const DISABLED = "disabled"
-const ERROR = "error"
-const UNKNOWN = "unknown"
-
 // ============================================================================
 // reveive a json message and unmarshal it to genericMessage
 // read the requestCode from payload

@@ -1,8 +1,10 @@
-package comms
+package nats
 
 import (
 	"log"
 	"time"
+
+	"github.com/foadmom/common/utils"
 
 	ng "github.com/nats-io/nats.go"
 )
@@ -12,24 +14,37 @@ import (
 //     ng "github.com/nats-io/nats.go"
 // )
 
+type natsConfig struct {
+	hosts    string
+	user     string
+	password string
+}
+
+var config natsConfig = natsConfig{ng.DefaultURL, "foadm", "Pa55w0rd"}
+
 type Nats struct {
 	Connection   *ng.Conn
 	Subscription *ng.Subscription
 }
 
-var nats *Nats = &Nats{}
+var nats Nats = Nats{}
+var hostName string
+var hostNamePostfix string
 
 func init() {
 	_err := nats.Connect()
 	if _err != nil {
 		log.Fatal(_err)
+	} else {
+		hostName = utils.HostName()
+		hostNamePostfix = hostName + "."
 	}
 }
 
 func (n *Nats) Connect() error {
 	var _err error
 
-	n.Connection, _err = ng.Connect(ng.DefaultURL, ng.UserInfo("foadm", "Pa55w0rd"))
+	n.Connection, _err = ng.Connect(config.hosts, ng.UserInfo(config.user, config.password))
 	if _err == nil {
 		// defer n.Connection.Close()
 		n.Subscription, _err = n.Connection.SubscribeSync("appGateway.*")
@@ -48,11 +63,11 @@ func (n *Nats) Connect() error {
 // ========================================================
 // Mandatory functions to satisfy the interface
 // ========================================================
-func Instance() *Nats {
+func Instance() Nats {
 	return nats
 }
 
-func (n *Nats) GetMessage() ([]byte, error) {
+func (n Nats) GetMessage(channel string) ([]byte, error) {
 	var _message *ng.Msg
 	var _err error
 
@@ -63,8 +78,12 @@ func (n *Nats) GetMessage() ([]byte, error) {
 	return []byte(_message.Data), _err
 }
 
-func (n *Nats) PutMessage(b []byte) error {
-	return nil
+func (n Nats) PutMessage(channel string, b []byte) error {
+	var _err error
+	var _queue string = channel + hostNamePostfix
+
+	_err = n.Connection.Publish(_queue, b)
+	return _err
 }
 
 // ========================================================
