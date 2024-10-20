@@ -5,8 +5,9 @@ import (
 	"io"
 	"log"
 	"net/http"
-	nl "nex/common/nexLogger"
 	"sync"
+
+	nl "github.com/foadmom/common/logger"
 )
 
 type server struct {

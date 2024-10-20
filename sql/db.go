@@ -21,13 +21,14 @@ func newConnection(driverName, connectionString string) (*sql.DB, error) {
 	return sqlObj, connectionError
 }
 
-func executeProc(procParams storedProcData) (string, error) {
+func executeProc(connection *sql.DB, procParams storedProcData) (string, error) {
 	var _rc string
+	var _err error
 
-	_conn, _err := connection()
+	// _conn, _err := connection()
 	if _err == nil {
-		defer _conn.Close()
-		_rc, _err = callStoredProc(_conn, procParams.ProcName, procParams.InputData)
+		defer connection.Close()
+		_rc, _err = callStoredProc(connection, procParams.ProcName, procParams.InputData)
 		if _err == nil {
 			fmt.Printf("return data=%s\n", _rc)
 		}
