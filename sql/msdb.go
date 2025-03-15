@@ -1,61 +1,46 @@
-package nexsql
+package sql
 
 import (
 	"database/sql"
-	"errors"
 	"fmt"
+
+	_ "github.com/microsoft/go-mssqldb"
 )
 
-type instanceData struct {
-	server   string
-	port     string
-	userId   string
-	password string
-	database string
-}
+type MsSqlProperties DBProperties
 
-var servers map[string]instanceData = make(map[string]instanceData)
+// ============================================================================
+//
+//	setup any
+//
+// ============================================================================
+func init() {
 
-func Init(instanceKey, server, port, userId, password, database string) {
-	_, _found := servers[instanceKey]
-	if _found == false {
-		var _newInstance instanceData = instanceData{server: server, port: port, userId: userId,
-			password: password, database: database}
-		servers[instanceKey] = _newInstance
-	}
-}
+	"sqlserver://SA:myStrong(!)Password@localhost:1433?database=tempdb"
 
-func Connection(instanceKey string) (*sql.DB, error) {
-	var _connectionError error
-	var _sqlObj *sql.DB
-	_instance, _found := servers[instanceKey]
-
-	if _found == true {
-		_connectionString := fmt.Sprintf("server=%s;port=%s;user id=%s;password=%s;database=%s",
-			_instance.server, _instance.port, _instance.userId, _instance.password, _instance.database)
-
-		_sqlObj, _connectionError = newConnection("mssql", _connectionString)
-	} else {
-		_connectionError = errors.New("connection has not been initialised")
-	}
-
-	return _sqlObj, _connectionError
+	var _sqlMS MsSqlProperties = MsSqlProperties{"localMsSQL", "pgx", "localhost", "5432",
+		"SA", "Pa55w0rd", "", "postgres"}
+	_sqlMS.ConnString = fmt.Sprintf("sqlserver://%s:%s@%s:%s/%s", _sqlMS.UserId, _sqlMS.Password, _sqlMS.Host, _sqlMS.Port, _sqlMS.Database)
+	DBServers[_sqlMS.Name] = DBProperties(_sqlMS)
 }
 
 // ============================================================================
 //
 // ============================================================================
-func callStoredProc(conn *sql.DB, procName string, inputJson string) (string, error) {
-	var _jsonOutput string
-	_query := "EXECUTE " + procName + " ?"
-
-	_stmt, _err := conn.Prepare(_query)
-	if _err == nil {
-		defer _stmt.Close()
-
-		row := _stmt.QueryRow(inputJson)
-		_err = row.Scan(&_jsonOutput)
+func (ms *MsSqlProperties) NewConnection() (*sql.DB, error) {
+	_pgx := GetDBProperty(ms.Name)
+	_conn, _err := _pgx.NewConnection()
+	if _err != nil {
+		logger.Printf("Unable to connect to database: %v\n", _err)
 	}
+	return _conn, _err
+}
 
-	return _jsonOutput, _err
+// ============================================================================
+//
+// ============================================================================
+func (ms *MsSqlProperties) CallStoredProc(conn *sql.DB, funcName string, query string) (string, error) {
+	_jsonResult, _err := (*DBProperties)(ms).CallStoredProc(conn, funcName, query)
+
+	return _jsonResult, _err
 }
