@@ -9,6 +9,8 @@ import (
 
 type PostgresProperties DBProperties
 
+// var _Logger l.Logger = l.Instance()
+
 // ============================================================================
 //
 //	setup any
@@ -28,7 +30,8 @@ func (p *PostgresProperties) NewConnection() (*sql.DB, error) {
 	_pgx := GetDBProperty(p.Name)
 	_conn, _err := _pgx.NewConnection()
 	if _err != nil {
-		logger.Printf("Unable to connect to database: %v\n", _err)
+		//		l.Logger.Printf("Unable to connect to database: %v\n", _err)
+		fmt.Printf("Unable to connect to database: %v\n", _err)
 	}
 	return _conn, _err
 }

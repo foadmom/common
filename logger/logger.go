@@ -1,12 +1,4 @@
-package nexLogger
-
-import (
-	"io"
-	"os"
-
-	"github.com/rs/zerolog"
-	"github.com/rs/zerolog/log"
-)
+package logger
 
 // Configuration for logging
 type Config struct {
@@ -30,11 +22,42 @@ type Config struct {
 	MaxAge int
 }
 
+const (
+	Off = iota
+	// LevelPanicValue is the value used for the panic level field.
+	Panic
+	// LevelFatalValue is the value used for the fatal level field.
+	Fatal
+	// LevelErrorValue is the value used for the error level field.
+	Error
+	// LevelWarnValue is the value used for the warn level field.
+	Warning
+	// LevelInfoValue is the value used for the info level field.
+	Info
+	// LevelDebugValue is the value used for the debug level field.
+	Debug
+	// LevelTraceValue is the value used for the trace level field.
+	Trace
+)
+
 type Logger struct {
-	*zerolog.Logger
 }
 
-var __Logger *zerolog.Logger
+type CLogger interface {
+	// Instance() *Logger
+
+	Configure(config Config)
+	Printf(level int, format string, v ...interface{})
+	Print(level int, msg string)
+}
+
+// var ActualLogger *CLogger
+
+var LogLevel int = Debug
+
+func SetLogLevel(level int) {
+	LogLevel = level
+}
 
 // Configure sets up the logging framework
 //
@@ -44,63 +67,22 @@ var __Logger *zerolog.Logger
 //
 // The output log file will be located at /var/log/service-xyz/service-xyz.log and
 // will be rolled according to configuration set.
-func Configure(config Config) *zerolog.Logger {
-	var writers []io.Writer
+// func Instance() *CLogger {
+// 	if ActualLogger == nil {
+// 		// _Logger = &Zer0Lgger{}
+// 		ActualLogger = getInstance()
+// 	}
+// 	return ActualLogger
+// }
 
-	if config.ConsoleLoggingEnabled {
-		writers = append(writers, zerolog.ConsoleWriter{Out: os.Stderr})
-	}
-	if config.FileLoggingEnabled {
-		writers = append(writers, newRollingFile(config))
-	}
-	mw := io.MultiWriter(writers...)
+// func (logger *Logger) Configure(config Config) {
+// 	logger.Configure(config)
+// }
 
-	logger := zerolog.New(mw).With().Timestamp().Caller().Logger()
-	// logger := zerolog.New(mw).With().Timestamp().Logger()
+// func (logger *Logger) Printf(level int, format string, v ...interface{}) {
+// 	logger.Printf(level, format, v...)
+// }
 
-	logger.Info().
-		Bool("fileLogging", config.FileLoggingEnabled).
-		Bool("jsonLogOutput", config.EncodeLogsAsJson).
-		Str("logDirectory", config.Directory).
-		Str("fileName", config.Filename).
-		Int("maxSizeMB", config.MaxSize).
-		Int("maxBackups", config.MaxBackups).
-		Int("maxAgeInDays", config.MaxAge).
-		Msg("logging configured")
-
-	__Logger = &logger
-	// __Logger = &Logger{
-	// 	Logger: &logger,
-	// }
-	return __Logger
-}
-
-func newRollingFile(config Config) io.Writer {
-	var _err error
-	var _iow io.Writer
-	if _err = os.MkdirAll(config.Directory, 0744); _err != nil {
-		log.Error().Err(_err).Str("path", config.Directory).Msg("can't create log directory")
-		return nil
-	} else {
-		_file := config.Directory + config.Filename
-		_iow, _err = os.OpenFile(_file, os.O_RDWR|os.O_CREATE|os.O_APPEND, 0666)
-	}
-	return _iow
-}
-
-func Init(serviceName string) {
-	// f, err := os.OpenFile("testlogfile", os.O_RDWR|os.O_CREATE|os.O_APPEND, 0666)
-	// if err != nil {
-	// 	log.Fatalf("error opening file: %v", err)
-	// }
-
-	// log.SetOutput(f)
-	// log.SetFlags(log.Lshortfile)
-
-	var _configuration Config = Config{true, false, true, "./", serviceName + ".log", 0, 14, 1}
-	Configure(_configuration)
-}
-
-func Instance() *zerolog.Logger {
-	return __Logger
-}
+// func (logger *Logger) Print(level int, msg string) {
+// 	logger.Printf(level, msg)
+// }
