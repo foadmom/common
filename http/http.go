@@ -3,11 +3,10 @@ package http
 import (
 	"fmt"
 	"io"
-	"log"
 	"net/http"
 	"sync"
 
-	nl "github.com/foadmom/common/logger"
+	l "github.com/foadmom/common/logger"
 )
 
 type server struct {
@@ -18,7 +17,10 @@ type server struct {
 	processor func(string) (string, error)
 }
 
+var httpLogger l.LoggerInterface
+
 func Init(host, port, url string, wg *sync.WaitGroup, pf func(string) (string, error)) {
+	httpLogger = l.Instance()
 	var _instance server = server{host, port, url, pf}
 	_instance.listen()
 	wg.Done()
@@ -28,12 +30,12 @@ func Init(host, port, url string, wg *sync.WaitGroup, pf func(string) (string, e
 //
 // ============================================================================
 func (m server) listen() {
-	nl.Instance().Debug().Msg("Entering func listen()")
+	httpLogger.Print(l.Info, "Entering func listen()")
 	http.HandleFunc(m.url, m.genericHandler)
 	var _address string = ":" + m.port
-	nl.Instance().Debug().Msg("calling http listen on port:" + m.port + " and url" + m.url)
+	httpLogger.Printf(l.Trace, "calling http listen on port: %s and url %s", m.port, m.url)
 	http.ListenAndServe(_address, nil)
-	nl.Instance().Debug().Msg("Exiting func listen()")
+	httpLogger.Print(l.Trace, "Exiting func listen()")
 }
 
 func (m server) genericHandler(w http.ResponseWriter, req *http.Request) {
@@ -50,12 +52,12 @@ func (m server) httpHandler(w http.ResponseWriter, req *http.Request) {
 
 	_jRequest, _err = getJsonFromReq(req)
 	if _err == nil {
-		nl.Instance().Debug().Msg("Received json message: " + _jRequest)
+		httpLogger.Printf(l.Debug, "Received json message: %s", _jRequest)
 		_jResponse, _err = m.processor(_jRequest)
 		if _err == nil {
 			sendJsonResponse(w, _jResponse)
 		} else {
-			nl.Instance().Error().Err(_err)
+			httpLogger.Printf(l.Error, "Error processing request: %s", _err.Error())
 		}
 	}
 }
@@ -68,7 +70,7 @@ func getJsonFromReq(req *http.Request) (string, error) {
 	var _jsonRequest []byte
 	_jsonRequest, _err = io.ReadAll(req.Body)
 	if _err != nil {
-		log.Printf("error getting json payload from Body. Error = %v\n", _err)
+		httpLogger.Printf(l.Error, "error getting json payload from Body. Error = %s", _err.Error())
 	}
 
 	return string(_jsonRequest), _err

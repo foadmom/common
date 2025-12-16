@@ -6,6 +6,7 @@ import (
 
 	"github.com/foadmom/common/utils"
 
+	l "github.com/foadmom/common/logger"
 	ng "github.com/nats-io/nats.go"
 )
 
@@ -30,8 +31,10 @@ type Nats struct {
 var nats Nats = Nats{}
 var hostName string
 var hostNamePostfix string
+var natsLogger l.LoggerInterface
 
 func init() {
+	natsLogger = l.Instance()
 	_err := nats.Connect()
 	if _err != nil {
 		log.Fatal(_err)
@@ -48,11 +51,9 @@ func (n *Nats) Connect() error {
 	if _err == nil {
 		// defer n.Connection.Close()
 		n.Subscription, _err = n.Connection.SubscribeSync("appGateway.*")
-		if _err == nil {
-
+		if _err != nil {
+			natsLogger.Printf(l.Fatal, "nats connection failed. %s", _err.Error())
 		}
-	} else {
-		log.Fatal(_err)
 	}
 
 	return _err
@@ -73,7 +74,7 @@ func (n Nats) GetMessage(channel string) ([]byte, error) {
 
 	_message, _err = n.Subscription.NextMsg(10 * time.Second)
 	if _err != nil {
-		log.Fatal(_err)
+		natsLogger.Printf(l.Fatal, "nats subscription to channel %s failed. %s", channel, _err.Error())
 	}
 	return []byte(_message.Data), _err
 }

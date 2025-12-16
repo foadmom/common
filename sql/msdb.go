@@ -4,10 +4,13 @@ import (
 	"database/sql"
 	"fmt"
 
+	l "github.com/foadmom/common/logger"
 	_ "github.com/microsoft/go-mssqldb"
 )
 
 type MsSqlProperties DBProperties
+
+var sqlserverLogger l.LoggerInterface
 
 // ============================================================================
 //
@@ -16,7 +19,7 @@ type MsSqlProperties DBProperties
 // ============================================================================
 func init() {
 
-	"sqlserver://SA:myStrong(!)Password@localhost:1433?database=tempdb"
+	// "sqlserver://SA:myStrong(!)Password@localhost:1433?database=tempdb"
 
 	var _sqlMS MsSqlProperties = MsSqlProperties{"localMsSQL", "pgx", "localhost", "5432",
 		"SA", "Pa55w0rd", "", "postgres"}
@@ -31,7 +34,7 @@ func (ms *MsSqlProperties) NewConnection() (*sql.DB, error) {
 	_pgx := GetDBProperty(ms.Name)
 	_conn, _err := _pgx.NewConnection()
 	if _err != nil {
-		logger.Printf("Unable to connect to database: %v\n", _err)
+		sqlserverLogger.Printf(l.Error, "Unable to connect to database: %s", _err.Error())
 	}
 	return _conn, _err
 }

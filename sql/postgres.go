@@ -4,12 +4,14 @@ import (
 	"database/sql"
 	"fmt"
 
+	l "github.com/foadmom/common/logger"
+
 	_ "github.com/jackc/pgx/v5/stdlib"
 )
 
 type PostgresProperties DBProperties
 
-// var _Logger l.Logger = l.Instance()
+var psgLogger l.LoggerInterface
 
 // ============================================================================
 //
@@ -17,6 +19,7 @@ type PostgresProperties DBProperties
 //
 // ============================================================================
 func init() {
+	psgLogger = l.Instance()
 	var _pgx PostgresProperties = PostgresProperties{"localPostgres", "pgx", "localhost", "5432",
 		"postgres", "postgres", "", "postgres"}
 	_pgx.ConnString = fmt.Sprintf("postgres://%s:%s@%s:%s/%s", _pgx.UserId, _pgx.Password, _pgx.Host, _pgx.Port, _pgx.Database)
@@ -30,8 +33,7 @@ func (p *PostgresProperties) NewConnection() (*sql.DB, error) {
 	_pgx := GetDBProperty(p.Name)
 	_conn, _err := _pgx.NewConnection()
 	if _err != nil {
-		//		l.Logger.Printf("Unable to connect to database: %v\n", _err)
-		fmt.Printf("Unable to connect to database: %v\n", _err)
+		psgLogger.Printf(l.Error, "Unable to connect to database: %s\n", _err.Error())
 	}
 	return _conn, _err
 }

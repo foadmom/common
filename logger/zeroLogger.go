@@ -37,7 +37,7 @@ type Zer0Lgger struct {
 
 var __Logger *Zer0Lgger = &Zer0Lgger{}
 
-func GetInstance() *Zer0Lgger {
+func Instance() *Zer0Lgger {
 	// var _instance CLogger = __Logger
 	// return _instance.(*Zer0Lgger)
 	return __Logger

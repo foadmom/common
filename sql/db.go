@@ -2,6 +2,8 @@ package sql
 
 import (
 	"database/sql"
+
+	l "github.com/foadmom/common/logger"
 )
 
 type StoredProcData struct {
@@ -26,11 +28,13 @@ type DBInterface interface {
 }
 
 var DBServers map[string]DBProperties = make(map[string]DBProperties)
+var dbLogger l.LoggerInterface
 
 // ============================================================================
 //
 // ============================================================================
 func init() {
+	dbLogger = l.Instance()
 }
 
 // ============================================================================
@@ -53,7 +57,7 @@ func GetDBProperty(key string) DBProperties {
 func (db *DBProperties) NewConnection() (*sql.DB, error) {
 	_conn, _err := sql.Open(db.Driver, db.ConnString)
 	if _err != nil {
-		logger.Printf("Unable to connect to database: %v\n", _err)
+		dbLogger.Printf(l.Error, "Unable to connect to database: %s", _err.Error())
 	}
 	return _conn, _err
 }
@@ -67,7 +71,7 @@ func (p *DBProperties) CallStoredProc(conn *sql.DB, funcName string, query strin
 	_row := conn.QueryRow(_queryString)
 	_err := _row.Scan(&_jsonResult)
 	if _err != nil {
-		logger.Printf("QueryRow failed: %v\n", _err)
+		dbLogger.Printf(l.Error, "QueryRow failed: %s", _err.Error())
 	}
 
 	return _jsonResult, _err

@@ -40,10 +40,7 @@ const (
 	Trace
 )
 
-type Logger struct {
-}
-
-type CLogger interface {
+type LoggerInterface interface {
 	// Instance() *Logger
 
 	Configure(config Config)
@@ -58,31 +55,3 @@ var LogLevel int = Debug
 func SetLogLevel(level int) {
 	LogLevel = level
 }
-
-// Configure sets up the logging framework
-//
-// In production, the container logs will be collected and file logging should be disabled. However,
-// during development it's nicer to see logs as text and optionally write to a file when debugging
-// problems in the containerized pipeline
-//
-// The output log file will be located at /var/log/service-xyz/service-xyz.log and
-// will be rolled according to configuration set.
-// func Instance() *CLogger {
-// 	if ActualLogger == nil {
-// 		// _Logger = &Zer0Lgger{}
-// 		ActualLogger = getInstance()
-// 	}
-// 	return ActualLogger
-// }
-
-// func (logger *Logger) Configure(config Config) {
-// 	logger.Configure(config)
-// }
-
-// func (logger *Logger) Printf(level int, format string, v ...interface{}) {
-// 	logger.Printf(level, format, v...)
-// }
-
-// func (logger *Logger) Print(level int, msg string) {
-// 	logger.Printf(level, msg)
-// }
