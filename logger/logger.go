@@ -50,7 +50,7 @@ type LoggerInterface interface {
 
 // var ActualLogger *CLogger
 
-var LogLevel int = Debug
+var LogLevel int = Trace
 
 func SetLogLevel(level int) {
 	LogLevel = level
