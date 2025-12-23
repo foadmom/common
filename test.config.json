@@ -1,0 +1,23 @@
+{
+	"environment":
+	{
+		"dev":
+		{
+			"http":
+			{
+				"host": "localhost",
+				"port": "8001"
+			},
+			"database": 
+			{
+				"server": "localhost", 
+				"port": "5432", 
+				"user": "postgres", 
+				"password": "postgres", 
+				"database": "postgres", 
+				"schema": "test",
+				"DriverName": "pgx"
+			}
+		}
+	}
+}

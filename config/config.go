@@ -1,5 +1,12 @@
 package config
 
+import (
+	"encoding/json"
+	"os"
+
+	l "github.com/foadmom/common/logger"
+)
+
 // ============================================================================
 // This is a common interface to all functions for getting configuration
 //   data for the apps
@@ -25,6 +32,15 @@ package config
 // ==================================================================
 var configCache []byte
 var configMap map[string]string
+var _logger l.LoggerInterface
+
+// ==================================================================
+// initializes the config system
+// ==================================================================
+func init() {
+	_logger = l.Instance()
+	_logger.Print(l.Trace, "config package initialized")
+}
 
 // ==================================================================
 // returns a JSON or any other format, eg YAML, as string.
@@ -49,4 +65,23 @@ func GetConfigCategory(env, cat string) (string, error) {
 // ==================================================================
 func GetConfigValue(env, cat, key string) (string, error) {
 	return "", nil
+}
+
+// ==================================================================
+//
+// ==================================================================
+func ReadConfigFile(fullPathAndFileName string) (string, error) {
+	_config, _err := os.ReadFile(fullPathAndFileName)
+	if _err != nil {
+		_logger.Printf(l.Fatal, "unable to read file: %v", _err)
+	}
+	return string(_config), _err
+}
+
+// ==================================================================
+//
+// ==================================================================
+func MapConfig(configStr string, configObj interface{}) error {
+	_err := json.Unmarshal([]byte(configStr), configObj)
+	return _err
 }

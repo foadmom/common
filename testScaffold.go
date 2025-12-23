@@ -8,7 +8,10 @@ import (
 
 	s "database/sql"
 
+	"flag"
+
 	h "github.com/foadmom/common/cHttp"
+	"github.com/foadmom/common/config"
 	l "github.com/foadmom/common/logger"
 	"github.com/foadmom/common/sql"
 )
@@ -18,8 +21,55 @@ var _logger l.LoggerInterface
 func main() {
 	_logger = l.Instance()
 	l.SetLogLevel(l.Trace)
-	TestcHttp()
+	commandLineArgs()
+	getConfigFromFile(ConfigFile)
+	// TestcHttp()
 	// TestSQL()
+}
+
+type configLevel struct {
+	Environment struct {
+		Dev struct {
+			HTTP struct {
+				Host string `json:"host"`
+				Port string `json:"port"`
+			} `json:"http"`
+			Database struct {
+				Server     string `json:"server"`
+				Port       string `json:"port"`
+				User       string `json:"user"`
+				Password   string `json:"password"`
+				Database   string `json:"database"`
+				Schema     string `json:"schema"`
+				DriverName string `json:"DriverName"`
+			} `json:"database"`
+		} `json:"dev"`
+	} `json:"environment"`
+}
+
+var configurations configLevel = configLevel{}
+
+var Env string
+var ConfigFile string
+var ConfigData string
+
+func commandLineArgs() {
+	// flag.StringVar(&Env, "env", "dev", "which environment you are running in")
+	// flag.StringVar(&ConfigFile, "config", "", "need a config file")
+	flag.Parse()
+	fmt.Println("environment", Env)
+}
+
+func getConfigFromFile(fileName string) {
+	var _err error
+	ConfigData, _err = config.ReadConfigFile(ConfigFile)
+	if _err == nil {
+		_logger.Printf(l.Info, "Config Data: %s", ConfigData)
+		_err = config.MapConfig(ConfigData, &configurations)
+	}
+	if _err != nil {
+		_logger.Printf(l.Fatal, "unable to read config file: %v", _err)
+	}
 }
 
 func TestcHttp() {
@@ -83,3 +133,28 @@ func TestGetUserId(dbp sql.PostgresProperties, conn *s.DB, userId int) (string, 
 
 	return _jsonResult, _err
 }
+
+var sampleConfig string = `
+{
+	"environment":
+	{
+		"dev": 
+		{
+			"http":
+			{
+				"host": "localhost",
+				"port": "8001"
+			}
+			"database": 
+			{
+				"server": "localhost", 
+				"port": "5432", 
+				"user": "postgres", 
+				"password": "postgres", 
+				"database": "postgres", 
+				"schema": "test",
+				"DriverName": "pgx"
+			}
+		}
+	}
+}`
