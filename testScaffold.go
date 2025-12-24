@@ -10,8 +10,8 @@ import (
 
 	"flag"
 
-	h "github.com/foadmom/common/cHttp"
 	"github.com/foadmom/common/config"
+	h "github.com/foadmom/common/http"
 	l "github.com/foadmom/common/logger"
 	"github.com/foadmom/common/sql"
 )
