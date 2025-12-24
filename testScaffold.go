@@ -1,3 +1,20 @@
+// {
+//     // Use IntelliSense to learn about possible attributes.
+//     // Hover to view descriptions of existing attributes.
+//     // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
+//     "version": "0.2.0",
+//     "configurations": [
+//         {
+//             "name": "Launch Package",
+//             "type": "go",
+//             "request": "launch",
+//             "mode": "auto",
+//             "program": "${fileDirname}",
+//             "args": ["-env", "dev", "-config", "./test.config.json"]
+//         }
+//     ]
+// }
+
 package main
 
 import (
@@ -16,10 +33,51 @@ import (
 	"github.com/foadmom/common/sql"
 )
 
+type databaseConfig struct {
+	Server     string `json:"server"`
+	Port       string `json:"port"`
+	User       string `json:"user"`
+	Password   string `json:"password"`
+	Database   string `json:"database"`
+	Schema     string `json:"schema"`
+	DriverName string `json:"DriverName"`
+}
+
+type httpConfig struct {
+	Host string `json:"host"`
+	Port string `json:"port"`
+}
+
+type envConfig struct {
+	Database databaseConfig `json:"database"`
+	HTTP     httpConfig     `json:"http"`
+}
+
 var _logger l.LoggerInterface
+var LoggerConfig l.Config = l.Config{true, false, true, "./", "testScaffold.log", 100, 7, 30}
+
+// // Enable console logging
+// ConsoleLoggingEnabled bool
+
+// // EncodeLogsAsJson makes the log framework log JSON
+// EncodeLogsAsJson bool
+// // FileLoggingEnabled makes the framework log to a file
+// // the fields below can be skipped if this value is false!
+// FileLoggingEnabled bool
+// // Directory to log to to when filelogging is enabled
+// Directory string
+// // Filename is the name of the logfile which will be placed inside the directory
+// Filename string
+// // MaxSize the max size in MB of the logfile before it's rolled
+// MaxSize int
+// // MaxBackups the max number of rolled files to keep
+// MaxBackups int
+// // MaxAge the max age in days to keep a logfile
+// MaxAge int
 
 func main() {
 	_logger = l.Instance()
+	_logger.Configure(LoggerConfig)
 	l.SetLogLevel(l.Trace)
 	commandLineArgs()
 	getConfigFromFile(ConfigFile)
@@ -29,21 +87,7 @@ func main() {
 
 type configLevel struct {
 	Environment struct {
-		Dev struct {
-			HTTP struct {
-				Host string `json:"host"`
-				Port string `json:"port"`
-			} `json:"http"`
-			Database struct {
-				Server     string `json:"server"`
-				Port       string `json:"port"`
-				User       string `json:"user"`
-				Password   string `json:"password"`
-				Database   string `json:"database"`
-				Schema     string `json:"schema"`
-				DriverName string `json:"DriverName"`
-			} `json:"database"`
-		} `json:"dev"`
+		Dev envConfig `json:"dev"`
 	} `json:"environment"`
 }
 
@@ -54,8 +98,8 @@ var ConfigFile string
 var ConfigData string
 
 func commandLineArgs() {
-	// flag.StringVar(&Env, "env", "dev", "which environment you are running in")
-	// flag.StringVar(&ConfigFile, "config", "", "need a config file")
+	flag.StringVar(&Env, "env", "dev", "which environment you are running in")
+	flag.StringVar(&ConfigFile, "config", "", "need a config file")
 	flag.Parse()
 	fmt.Println("environment", Env)
 }
@@ -66,6 +110,9 @@ func getConfigFromFile(fileName string) {
 	if _err == nil {
 		_logger.Printf(l.Info, "Config Data: %s", ConfigData)
 		_err = config.MapConfig(ConfigData, &configurations)
+		if _err == nil {
+			_logger.Printf(l.Info, "configuration:  %v", configurations)
+		}
 	}
 	if _err != nil {
 		_logger.Printf(l.Fatal, "unable to read config file: %v", _err)
@@ -133,28 +180,3 @@ func TestGetUserId(dbp sql.PostgresProperties, conn *s.DB, userId int) (string, 
 
 	return _jsonResult, _err
 }
-
-var sampleConfig string = `
-{
-	"environment":
-	{
-		"dev": 
-		{
-			"http":
-			{
-				"host": "localhost",
-				"port": "8001"
-			}
-			"database": 
-			{
-				"server": "localhost", 
-				"port": "5432", 
-				"user": "postgres", 
-				"password": "postgres", 
-				"database": "postgres", 
-				"schema": "test",
-				"DriverName": "pgx"
-			}
-		}
-	}
-}`
