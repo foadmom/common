@@ -10,6 +10,8 @@ import (
 
 	"flag"
 
+	"ezpkg.io/errorz"
+	iterjson "ezpkg.io/iter.json"
 	h "github.com/foadmom/common/cHttp"
 	"github.com/foadmom/common/config"
 	l "github.com/foadmom/common/logger"
@@ -21,8 +23,9 @@ var _logger l.LoggerInterface
 func main() {
 	_logger = l.Instance()
 	l.SetLogLevel(l.Trace)
-	commandLineArgs()
-	getConfigFromFile(ConfigFile)
+	// commandLineArgs()
+	// getConfigFromFile(ConfigFile)
+	json_iterator()
 	// TestcHttp()
 	// TestSQL()
 }
@@ -144,7 +147,7 @@ var sampleConfig string = `
 			{
 				"host": "localhost",
 				"port": "8001"
-			}
+			},
 			"database": 
 			{
 				"server": "localhost", 
@@ -158,3 +161,17 @@ var sampleConfig string = `
 		}
 	}
 }`
+
+func json_iterator() {
+	// data := `{"name": "Alice", "age": 24, "scores": [9, 10, 8], "address": {"city": "The Sun", "zip": 10101}}`
+
+	// 🎄Example: iterate over json
+	fmt.Printf("| %12v | %10v | %10v |%v|\n", "PATH", "KEY", "TOKEN", "LVL")
+	fmt.Println("| ------------ | ---------- | ---------- | - |")
+	for item, err := range iterjson.Parse([]byte(sampleConfig)) {
+		errorz.MustZ(err)
+
+		fmt.Printf("| %12v | %10v | %10v | %v |\n",
+			item.GetPathString(), item.Key, item.Token, item.Level)
+	}
+}
