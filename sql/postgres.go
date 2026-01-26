@@ -43,6 +43,5 @@ func (p *PostgresProperties) NewConnection() (*sql.DB, error) {
 // ============================================================================
 func (p *PostgresProperties) CallStoredProc(conn *sql.DB, funcName string, query string) (string, error) {
 	_jsonResult, _err := (*DBProperties)(p).CallStoredProc(conn, funcName, query)
-
 	return _jsonResult, _err
 }
