@@ -27,11 +27,12 @@ import (
 
 	"flag"
 
-	"ezpkg.io/errorz"
-	iterjson "ezpkg.io/iter.json"
+	// "ezpkg.io/errorz"
+	// iterjson "ezpkg.io/iter.json"
 	h "github.com/foadmom/common/cHttp"
 	"github.com/foadmom/common/config"
-	h "github.com/foadmom/common/http"
+
+	// h "github.com/foadmom/common/http"
 	l "github.com/foadmom/common/logger"
 	"github.com/foadmom/common/sql"
 )
@@ -84,9 +85,10 @@ func main() {
 	l.SetLogLevel(l.Trace)
 	// commandLineArgs()
 	// getConfigFromFile(ConfigFile)
-	json_iterator()
+	// json_iterator()
 	// TestcHttp()
 	// TestSQL()
+	testGenerateStoredProcWrapper()
 }
 
 type configLevel struct {
@@ -210,16 +212,98 @@ var sampleConfig string = `
 	}
 }`
 
-func json_iterator() {
-	// data := `{"name": "Alice", "age": 24, "scores": [9, 10, 8], "address": {"city": "The Sun", "zip": 10101}}`
+// func generateStoredProcWrapper(procName string, jsonInput string) string {
 
-	// 🎄Example: iterate over json
-	fmt.Printf("| %12v | %10v | %10v |%v|\n", "PATH", "KEY", "TOKEN", "LVL")
-	fmt.Println("| ------------ | ---------- | ---------- | - |")
-	for item, err := range iterjson.Parse([]byte(sampleConfig)) {
-		errorz.MustZ(err)
+// 	// _output :=  + procName + "param(input json) RETURNS text AS $$"
 
-		fmt.Printf("| %12v | %10v | %10v | %v |\n",
-			item.GetPathString(), item.Key, item.Token, item.Level)
+// 	_output := fmt.Sprintf("CREATE OR REPLACE FUNCTION %s (input json) RETURNS text AS $$\n    DECLARE\n", procName)
+// 	for _item, _err := range iterjson.Parse([]byte(jsonInput)) {
+// 		if _err == nil {
+// 			// if _item.Key.Type() != 0 {
+// 			if _item.IsObjectValue() {
+// 				_tokenValue, _ := _item.GetValue()
+// 				_output += fmt.Sprintf("        %s %s;\n", _item.Key, _tokenValue)
+// 				_output += fmt.Sprintf("        %s TEXT := input::json->>'%s';\n", _item.Key, _item.Token)
+// 			}
+// 		}
+
+// 	}
+
+// 	return _output
+// 	// DECLARE
+// 	// --    _input text :=  '{"username": "johndoe", "age": 30, "email": "johndoe@example.com"}';
+// 	//     _username text;
+// 	// BEGIN
+// 	//     _username = input::json->'username';
+// 	//     RETURN input;
+// 	// END;
+// 	// $$ LANGUAGE plpgsql;
+
+// 	// use iterjson to parse a json config and generate a stored procedure wrapper
+// }
+
+// var sampleJsonInput string = `{"username": "johndoe", "age": 30, "contacts": {"email": "johndoe@example.com","mobile": "07462 666 666"}, "accountHolder": true}`
+var sampleJsonInput string = `
+{
+  "username": "johndoe",
+  "age": 30,
+  "contacts": {
+    "email": "johndoe@example.com",
+    "phones": {
+      "mobile": "07462 666 666",
+      "work": "07462 666 667"
+    }
+  },
+  "accountHolder": true
+}`
+
+func testGenerateStoredProcWrapper() {
+	procName := "test.my_stored_procedure"
+	// jsonInput := `{"username": "johndoe", "age": 30, "email": "johndoe@example.com", "accountHolder": true}`
+
+	_output, _err := generateStoredProcWrapper_2(procName, sampleJsonInput)
+	fmt.Printf("%s %v\n", _output, _err)
+}
+
+func generateStoredProcWrapper_2(procName string, jsonInput string) (string, error) {
+	var _data map[string]interface{}
+	var _output string
+
+	_err := json.Unmarshal([]byte(jsonInput), &_data)
+	if _err == nil {
+		_output = fmt.Sprintf("CREATE OR REPLACE FUNCTION %s (input json) RETURNS text AS $$\n    DECLARE\n", procName)
+		_output, _ = generateParamsFromMap("", _output, _data)
+		_output += "    BEGIN\n"
+		_output += "        -- function body here\n"
+		_output += "        RETURN input;\n"
+		_output += "    END;\n"
+		_output += "$$ LANGUAGE plpgsql;\n"
 	}
+	return _output, _err
+}
+
+// ============================================================================
+// this is a recursive function to handle nested json objects
+// This is how you get individual values from nested json in psql:
+// _contacts_email TEXT := input::json#>>'{contacts, email}';
+// ============================================================================
+func generateParamsFromMap(prefix, output string, _data map[string]any) (string, error) {
+	if prefix == "" { // && prefix[0] != 'v' { // which means it is the first level
+		prefix = "v" + prefix
+	}
+	for _key, _value := range _data {
+		switch v := _value.(type) {
+		case string:
+			output += fmt.Sprintf("        %s_%s TEXT := input::json->>'%s';\n", prefix, _key, _key)
+		case float64:
+			output += fmt.Sprintf("        %s_%s NUMERIC := (input::json->>'%s')::NUMERIC;\n", prefix, _key, _key)
+		case bool:
+			output += fmt.Sprintf("        %s_%s BOOLEAN := (input::json->>'%s')::BOOLEAN;\n", prefix, _key, _key)
+		case map[string]any:
+			output, _ = generateParamsFromMap(prefix+"_"+_key, output, _value.(map[string]any))
+		default:
+			return "", fmt.Errorf("unsupported type for key %s: %T", _key, v)
+		}
+	}
+	return output, nil
 }
