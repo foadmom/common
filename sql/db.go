@@ -19,6 +19,7 @@ type DBProperties struct {
 	UserId     string
 	Password   string
 	Database   string
+	Schema     string
 	ConnString string
 }
 

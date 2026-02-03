@@ -22,7 +22,7 @@ func init() {
 	// "sqlserver://SA:myStrong(!)Password@localhost:1433?database=tempdb"
 
 	var _sqlMS MsSqlProperties = MsSqlProperties{"localMsSQL", "pgx", "localhost", "5432",
-		"SA", "Pa55w0rd", "", "postgres"}
+		"SA", "Pa55w0rd", "", "postgres", ""}
 	_sqlMS.ConnString = fmt.Sprintf("sqlserver://%s:%s@%s:%s/%s", _sqlMS.UserId, _sqlMS.Password, _sqlMS.Host, _sqlMS.Port, _sqlMS.Database)
 	DBServers[_sqlMS.Name] = DBProperties(_sqlMS)
 }

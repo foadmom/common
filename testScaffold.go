@@ -82,7 +82,7 @@ func main() {
 	commandLineArgs()
 	getConfigFromFile(ConfigFile)
 	// TestcHttp()
-	// TestSQL()
+	TestSQL()
 }
 
 type configLevel struct {
@@ -136,8 +136,16 @@ func TestSQL() {
 	_logger = l.Instance()
 	_logger.Print(l.Trace, "starting TestSQL")
 
-	PostgresProperties := sql.PostgresProperties{"localPostgres", "pgx", "localhost", "5432",
-		"postgres", "postgres", "", "postgres"}
+	PostgresProperties := sql.PostgresProperties{
+		Name:     "localPostgres",
+		Driver:   configurations.Environment.Dev.Database.DriverName,
+		Host:     configurations.Environment.Dev.Database.Server,
+		Port:     configurations.Environment.Dev.Database.Port,
+		UserId:   configurations.Environment.Dev.Database.User,
+		Password: configurations.Environment.Dev.Database.Password,
+		Database: configurations.Environment.Dev.Database.Database,
+		Schema:   configurations.Environment.Dev.Database.Schema,
+	}
 	conn, err := PostgresProperties.NewConnection()
 	if err != nil {
 		_logger.Printf(l.Error, "Unable to connect to database: %s\n", err.Error())
@@ -151,28 +159,49 @@ func TestSQL() {
 	_logger.Print(l.Trace, "exiting TestSQL")
 }
 
-type User struct {
-	Id        int    `json:"id"`
-	FirstName string `json:"first_name"`
-	LastName  string `json:"last_name"`
-	Email     string `json:"email"`
-	Phone     string `json:"phone"`
+// ===============================
+// ===============================
+type RecordInfo struct {
+	RecordStatus  string `json:"record_status"`
+	CreatedBy     string `json:"created_by"`
+	CreatedOn     string `json:"created_on"`
+	LastUpdatedBy string `json:"last_updated_by"`
+	LastUpdatedOn string `json:"last_updated_on"`
 }
 
-func TestGetUserId(dbp sql.PostgresProperties, conn *s.DB, userId int) (string, error) {
-	var funcName string = "test.get_user_by_id"
-	var query string = fmt.Sprintf(`{"user_id": %d}`, userId)
+// ===============================
+// ===============================
+type zone struct {
+	Id        int    `json:"id"`
+	ShortName string `json:"short_name"`
+	LongName  string `json:"long_name"`
+	RecordInfo
+}
+
+type result struct {
+	Data      zone                  `json:"data"`
+	Exception sql.ExceptionPostgres `json:"exception"`
+}
+
+type resultTemplate struct {
+	Rc     int    `json:"rc"`
+	Result result `json:"result"`
+}
+
+func TestGetUserId(dbp sql.PostgresProperties, conn *s.DB, id int) (string, error) {
+	var funcName string = "myCoach.zone_get_js"
+	var query string = fmt.Sprintf(`{"id": %d}`, id)
 
 	var _jsonResult string
 	var _err error
-	var _structResult User = User{}
+	var _structResult resultTemplate = resultTemplate{}
 	_jsonResult, _err = dbp.CallStoredProc(conn, funcName, query)
 	if _err == nil {
-		_logger.Printf(l.Info, "Stored Procedure %s executed successfully", funcName)
+		_logger.Printf(l.Info, "result = %s", _jsonResult)
 		json.Unmarshal([]byte(_jsonResult), &_structResult)
-		_logger.Printf(l.Info, "UserID: %d, Username: %s, Email: %s",
-			_structResult.Id, _structResult.LastName, _structResult.Email)
-		fmt.Printf("%v\n", _structResult)
+		_logger.Printf(l.Info, "zone = %v", _structResult)
+		_logger.Printf(l.Info, "created_on %s, last_updated_on %s", _structResult.Result.Data.CreatedOn, _structResult.Result.Data.LastUpdatedOn)
+		// fmt.Printf("%v\n", _structResult)
 	} else {
 
 		return "", fmt.Errorf("error calling stored procedure: %w\n", _err)
