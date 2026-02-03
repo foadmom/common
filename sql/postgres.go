@@ -55,28 +55,17 @@ func (p *PostgresProperties) CallStoredProc(conn *sql.DB, funcName string, query
 }
 
 // ============================================================================
-// this is a function to produce a wrapper for a postgres function that takes a
-// json input and creates local psql variables from json keys and values.
+// This function generates a stored procedure wrapper given a
+// procedure name and a sample json input
 // ============================================================================
-func generateStoredProcWrapper_2(procName string, jsonInput string) (string, error) {
+func generateStoredProcWrapper(procName string, jsonInput string) (string, error) {
 	var _data map[string]interface{}
 	var _output string
 
 	_err := json.Unmarshal([]byte(jsonInput), &_data)
 	if _err == nil {
 		_output = fmt.Sprintf("CREATE OR REPLACE FUNCTION %s (input json) RETURNS text AS $$\n    DECLARE\n", procName)
-		for _key, _value := range _data {
-			switch v := _value.(type) {
-			case string:
-				_output += fmt.Sprintf("        _%s TEXT := input::json->>'%s';\n", _key, _key)
-			case float64:
-				_output += fmt.Sprintf("        _%s NUMERIC := (input::json->>'%s')::NUMERIC;\n", _key, _key)
-			case bool:
-				_output += fmt.Sprintf("        _%s BOOLEAN := (input::json->>'%s')::BOOLEAN;\n", _key, _key)
-			default:
-				return "", fmt.Errorf("unsupported type for key %s: %T", _key, v)
-			}
-		}
+		_output, _ = generateParamsFromMap("", _output, _data)
 		_output += "    BEGIN\n"
 		_output += "        -- function body here\n"
 		_output += "        RETURN input;\n"
@@ -84,4 +73,30 @@ func generateStoredProcWrapper_2(procName string, jsonInput string) (string, err
 		_output += "$$ LANGUAGE plpgsql;\n"
 	}
 	return _output, _err
+}
+
+// ============================================================================
+// this is a recursive function to handle nested json objects
+// This is how you get individual values from nested json in psql:
+// _contacts_email TEXT := input::json#>>'{contacts, email}';
+// ============================================================================
+func generateParamsFromMap(prefix, output string, _data map[string]any) (string, error) {
+	if prefix == "" { // && prefix[0] != 'v' { // which means it is the first level
+		prefix = "v" + prefix
+	}
+	for _key, _value := range _data {
+		switch v := _value.(type) {
+		case string:
+			output += fmt.Sprintf("        %s_%s TEXT := input::json->>'%s';\n", prefix, _key, _key)
+		case float64:
+			output += fmt.Sprintf("        %s_%s NUMERIC := (input::json->>'%s')::NUMERIC;\n", prefix, _key, _key)
+		case bool:
+			output += fmt.Sprintf("        %s_%s BOOLEAN := (input::json->>'%s')::BOOLEAN;\n", prefix, _key, _key)
+		case map[string]any:
+			output, _ = generateParamsFromMap(prefix+"_"+_key, output, _value.(map[string]any))
+		default:
+			return "", fmt.Errorf("unsupported type for key %s: %T", _key, v)
+		}
+	}
+	return output, nil
 }
