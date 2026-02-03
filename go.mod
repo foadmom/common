@@ -5,6 +5,8 @@ go 1.24.0
 replace github.com/foadmom/common/logger => ../logger
 
 require (
+	ezpkg.io/errorz v0.2.2
+	ezpkg.io/iter.json v0.2.2
 	github.com/google/uuid v1.6.0
 	github.com/jackc/pgx/v5 v5.7.6
 	github.com/microsoft/go-mssqldb v1.9.5
@@ -14,6 +16,8 @@ require (
 )
 
 require (
+	ezpkg.io/fmtz v0.2.2 // indirect
+	ezpkg.io/stacktracez v0.2.2 // indirect
 	github.com/golang-sql/civil v0.0.0-20220223132316-b832511892a9 // indirect
 	github.com/golang-sql/sqlexp v0.1.0 // indirect
 	github.com/jackc/pgpassfile v1.0.0 // indirect
