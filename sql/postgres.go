@@ -58,7 +58,7 @@ func (p *PostgresProperties) CallStoredProc(conn *sql.DB, funcName string, query
 // This function generates a stored procedure wrapper given a
 // procedure name and a sample json input
 // ============================================================================
-func generateStoredProcWrapper(procName string, jsonInput string) (string, error) {
+func GenerateStoredProcWrapper(procName string, jsonInput string) (string, error) {
 	var _data map[string]interface{}
 	var _output string
 
@@ -66,9 +66,10 @@ func generateStoredProcWrapper(procName string, jsonInput string) (string, error
 	if _err == nil {
 		_output = fmt.Sprintf("CREATE OR REPLACE FUNCTION %s (input json) RETURNS text AS $$\n    DECLARE\n", procName)
 		_output, _ = generateParamsFromMap("", _output, _data)
+		_output += "        _result TEXT;\n"
 		_output += "    BEGIN\n"
 		_output += "        -- function body here\n"
-		_output += "        RETURN input;\n"
+		_output += "        RETURN _result;\n"
 		_output += "    END;\n"
 		_output += "$$ LANGUAGE plpgsql;\n"
 	}

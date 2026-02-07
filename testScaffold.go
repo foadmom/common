@@ -31,6 +31,7 @@ import (
 	// iterjson "ezpkg.io/iter.json"
 	"github.com/foadmom/common/config"
 	h "github.com/foadmom/common/http"
+	q "github.com/foadmom/common/sql"
 
 	// h "github.com/foadmom/common/http"
 	l "github.com/foadmom/common/logger"
@@ -286,53 +287,11 @@ var sampleJsonInput string = `
   "accountHolder": true
 }`
 
+var operator_network_1 string = `{"operator_code": "NEX", "network_code": "EN", "trans_mode":"COACH", "country_iso2":"GB"}`
+
 func testGenerateStoredProcWrapper() {
 	procName := "test.my_stored_procedure"
-	// jsonInput := `{"username": "johndoe", "age": 30, "email": "johndoe@example.com", "accountHolder": true}`
 
-	_output, _err := generateStoredProcWrapper_2(procName, sampleJsonInput)
+	_output, _err := q.GenerateStoredProcWrapper(procName, operator_network_1)
 	fmt.Printf("%s %v\n", _output, _err)
-}
-
-func generateStoredProcWrapper_2(procName string, jsonInput string) (string, error) {
-	var _data map[string]interface{}
-	var _output string
-
-	_err := json.Unmarshal([]byte(jsonInput), &_data)
-	if _err == nil {
-		_output = fmt.Sprintf("CREATE OR REPLACE FUNCTION %s (input json) RETURNS text AS $$\n    DECLARE\n", procName)
-		_output, _ = generateParamsFromMap("", _output, _data)
-		_output += "    BEGIN\n"
-		_output += "        -- function body here\n"
-		_output += "        RETURN input;\n"
-		_output += "    END;\n"
-		_output += "$$ LANGUAGE plpgsql;\n"
-	}
-	return _output, _err
-}
-
-// ============================================================================
-// this is a recursive function to handle nested json objects
-// This is how you get individual values from nested json in psql:
-// _contacts_email TEXT := input::json#>>'{contacts, email}';
-// ============================================================================
-func generateParamsFromMap(prefix, output string, _data map[string]any) (string, error) {
-	if prefix == "" { // && prefix[0] != 'v' { // which means it is the first level
-		prefix = "v" + prefix
-	}
-	for _key, _value := range _data {
-		switch v := _value.(type) {
-		case string:
-			output += fmt.Sprintf("        %s_%s TEXT := input::json->>'%s';\n", prefix, _key, _key)
-		case float64:
-			output += fmt.Sprintf("        %s_%s NUMERIC := (input::json->>'%s')::NUMERIC;\n", prefix, _key, _key)
-		case bool:
-			output += fmt.Sprintf("        %s_%s BOOLEAN := (input::json->>'%s')::BOOLEAN;\n", prefix, _key, _key)
-		case map[string]any:
-			output, _ = generateParamsFromMap(prefix+"_"+_key, output, _value.(map[string]any))
-		default:
-			return "", fmt.Errorf("unsupported type for key %s: %T", _key, v)
-		}
-	}
-	return output, nil
 }
