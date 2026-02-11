@@ -14,8 +14,8 @@
 				"port": "5432", 
 				"user": "postgres", 
 				"password": "postgres", 
-				"database": "postgres", 
-				"schema": "test",
+				"database": "transmodel", 
+				"schema": "common",
 				"DriverName": "pgx"
 			}
 		}

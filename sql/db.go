@@ -41,8 +41,8 @@ func init() {
 // ============================================================================
 //
 // ============================================================================
-func AddDBProperty(key string, value DBProperties) {
-	DBServers[key] = value
+func AddDBProperty(prop DBProperties) {
+	DBServers[prop.Name] = prop
 }
 
 // ============================================================================
@@ -55,7 +55,7 @@ func GetDBProperty(key string) DBProperties {
 // ============================================================================
 //
 // ============================================================================
-func (db *DBProperties) NewConnection() (*sql.DB, error) {
+func Connect(db *DBProperties) (*sql.DB, error) {
 	_conn, _err := sql.Open(db.Driver, db.ConnString)
 	if _err != nil {
 		dbLogger.Printf(l.Error, "Unable to connect to database: %s", _err.Error())
@@ -64,11 +64,12 @@ func (db *DBProperties) NewConnection() (*sql.DB, error) {
 }
 
 // ============================================================================
-//
+// FUNCTION common.function_wrapper (functionName text, input json) RETURNS TEXT
 // ============================================================================
-func (p *DBProperties) CallStoredProc(conn *sql.DB, funcName string, query string) (string, error) {
+func CallStoredProc(conn *sql.DB, funcName string, query string) (string, error) {
 	var _jsonResult string
-	var _queryString string = "SELECT * FROM " + funcName + "('" + query + "')"
+	var _queryString string = "SELECT * FROM common.function_wrapper " +
+		"('" + funcName + "', '" + query + "')"
 	_row := conn.QueryRow(_queryString)
 	_err := _row.Scan(&_jsonResult)
 	if _err != nil {

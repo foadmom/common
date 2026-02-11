@@ -31,8 +31,8 @@ func init() {
 //
 // ============================================================================
 func (ms *MsSqlProperties) NewConnection() (*sql.DB, error) {
-	_pgx := GetDBProperty(ms.Name)
-	_conn, _err := _pgx.NewConnection()
+	_mssql := GetDBProperty(ms.Name)
+	_conn, _err := Connect(&_mssql)
 	if _err != nil {
 		sqlserverLogger.Printf(l.Error, "Unable to connect to database: %s", _err.Error())
 	}
@@ -43,7 +43,7 @@ func (ms *MsSqlProperties) NewConnection() (*sql.DB, error) {
 //
 // ============================================================================
 func (ms *MsSqlProperties) CallStoredProc(conn *sql.DB, funcName string, query string) (string, error) {
-	_jsonResult, _err := (*DBProperties)(ms).CallStoredProc(conn, funcName, query)
+	_jsonResult, _err := CallStoredProc(conn, funcName, query)
 
 	return _jsonResult, _err
 }

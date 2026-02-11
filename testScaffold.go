@@ -19,13 +19,12 @@ package main
 
 import (
 	"encoding/json"
+	"flag"
 	"fmt"
 	"net/http"
 	"time"
 
 	s "database/sql"
-
-	"flag"
 
 	// "ezpkg.io/errorz"
 	// iterjson "ezpkg.io/iter.json"
@@ -84,12 +83,12 @@ func main() {
 	_logger = l.Instance()
 	_logger.Configure(LoggerConfig)
 	l.SetLogLevel(l.Trace)
-	// commandLineArgs()
-	// getConfigFromFile(ConfigFile)
+	commandLineArgs()
+	getConfigFromFile(ConfigFile)
 	// json_iterator()
 	// TestcHttp()
-	// TestSQL()
-	testGenerateStoredProcWrapper()
+	TestSQL()
+	// testGenerateStoredProcWrapper()
 }
 
 type configLevel struct {
@@ -106,7 +105,7 @@ var ConfigData string
 
 func commandLineArgs() {
 	flag.StringVar(&Env, "env", "dev", "which environment you are running in")
-	flag.StringVar(&ConfigFile, "config", "", "need a config file")
+	flag.StringVar(&ConfigFile, "config", "./test.config.json", "need a config file")
 	flag.Parse()
 	fmt.Println("environment", Env)
 }
@@ -142,8 +141,9 @@ func localHttpHandler(w http.ResponseWriter, req *http.Request) {
 func TestSQL() {
 	_logger = l.Instance()
 	_logger.Print(l.Trace, "starting TestSQL")
+	var _post q.PostgresProperties = q.PostgresProperties{}
 
-	PostgresProperties := sql.PostgresProperties{
+	_prop := sql.DBProperties{
 		Name:     "localPostgres",
 		Driver:   configurations.Environment.Dev.Database.DriverName,
 		Host:     configurations.Environment.Dev.Database.Server,
@@ -153,14 +153,18 @@ func TestSQL() {
 		Database: configurations.Environment.Dev.Database.Database,
 		Schema:   configurations.Environment.Dev.Database.Schema,
 	}
-	conn, err := PostgresProperties.NewConnection()
+
+	_post.Setup(_prop)
+
+	conn, err := _post.Connect(_prop.Name)
 	if err != nil {
 		_logger.Printf(l.Error, "Unable to connect to database: %s\n", err.Error())
 		return
 	}
 	defer conn.Close()
 
-	jsonResult, err := TestGetUserId(PostgresProperties, conn, 1)
+	jsonResult, err := _post.CallStoredProc(conn, "network.operator_get_all", "''")
+	// jsonResult, err := TestGetUserId(PostgresProperties, conn, 1)
 
 	_logger.Printf(l.Info, "Stored Procedure Result: %s\n", jsonResult)
 	_logger.Print(l.Trace, "exiting TestSQL")
