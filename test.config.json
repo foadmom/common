@@ -1,23 +1,44 @@
 {
-	"environment":
+	"Environment":
 	{
-		"dev":
+		"Dev":
 		{
-			"http":
+			"HTTP":
 			{
-				"host": "localhost",
-				"port": "8001"
+				"Host": "localhost",
+				"Port": "8001"
 			},
-			"database": 
+			"Database": 
 			{
-				"server": "localhost", 
-				"port": "5432", 
-				"user": "postgres", 
-				"password": "postgres", 
-				"database": "transmodel", 
-				"schema": "common",
-				"DriverName": "pgx"
+				"Name"      : "localPostgres",
+				"Driver"    : "pgx",
+				"Host"      : "localhost", 
+				"Port"      : "5432", 
+				"User"      : "postgres", 
+				"Password"  : "postgres", 
+				"Database"  : "transmodel", 
+				"Schema"    : "common"
+			}
+		},
+		"Test":
+		{
+			"HTTP":
+			{
+				"Host": "localhost",
+				"Port": "8080"
+			},
+			"Database": 
+			{
+				"Name"      : "testDB",
+				"Driver"    : "pgx",
+				"Host"      : "test.db.server", 
+				"Port"      : "5432", 
+				"User"      : "postgres", 
+				"Password"  : "postgres", 
+				"Database"  : "transmodel", 
+				"Schema"    : "common"
 			}
 		}
+
 	}
 }

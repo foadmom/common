@@ -12,16 +12,20 @@ import (
 
 type PostgresProperties struct{}
 
-// type PostgresProperties DBProperties
+type PostgresException struct {
+	Returned_sqlstate    string `json:"RETURNED_SQLSTATE"`
+	Column_name          string `json:"COLUMN_NAME"`
+	Constraint_name      string `json:"CONSTRAINT_NAME"`
+	PG_datetype_name     string `json:"PG_DATATYPE_NAME"`
+	Message_text         string `json:"MESSAGE_TEXT"`
+	Table_name           string `json:"TABLE_NAME"`
+	Schema_name          string `json:"SCHEMA_NAME"`
+	PG_exception_detail  string `json:"PG_EXCEPTION_DETAIL"`
+	PG_exception_hint    string `json:"PG_EXCEPTION_HINT"`
+	PG_exception_context string `json:"PG_EXCEPTION_CONTEXT"`
+}
 
 var psgLogger l.LoggerInterface
-
-type ExceptionPostgres struct {
-	Message string `json:"message"`
-	Details string `json:"details"`
-	Hint    string `json:"hint"`
-	Context string `json:"context"`
-}
 
 // ============================================================================
 //
@@ -36,7 +40,7 @@ func init() {
 //
 // ============================================================================
 func (p *PostgresProperties) Setup(prop DBProperties) {
-	prop.ConnString = fmt.Sprintf("postgres://%s:%s@%s:%s/%s", prop.UserId,
+	prop.ConnString = fmt.Sprintf("postgres://%s:%s@%s:%s/%s", prop.User,
 		prop.Password, prop.Host, prop.Port, prop.Database)
 	AddDBProperty(prop)
 }

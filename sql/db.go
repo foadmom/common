@@ -16,7 +16,7 @@ type DBProperties struct {
 	Driver     string
 	Host       string
 	Port       string
-	UserId     string
+	User       string
 	Password   string
 	Database   string
 	Schema     string
