@@ -28,16 +28,19 @@ type PostgresException struct {
 var psgLogger l.LoggerInterface
 
 // ============================================================================
-//
-//	setup any
-//
+// ============================================================================
+// ============================================================================
+// This file contains functions specific to postgres, such as
+// connecting to the database, calling stored procedures,
+// and generating stored procedure wrappers from json input
+// ============================================================================
 // ============================================================================
 func init() {
 	psgLogger = l.Instance()
 }
 
 // ============================================================================
-//
+// This function takes in the database properties and sets up the connection string
 // ============================================================================
 func (p *PostgresProperties) Setup(prop DBProperties) {
 	prop.ConnString = fmt.Sprintf("postgres://%s:%s@%s:%s/%s", prop.User,
@@ -46,7 +49,8 @@ func (p *PostgresProperties) Setup(prop DBProperties) {
 }
 
 // ============================================================================
-//
+// Establishes a connection to the database using the provided properties and
+// returns the connection object
 // ============================================================================
 func (p *PostgresProperties) Connect(name string) (*sql.DB, error) {
 	_pgx := GetDBProperty(name)
@@ -59,7 +63,10 @@ func (p *PostgresProperties) Connect(name string) (*sql.DB, error) {
 }
 
 // ============================================================================
-//
+// This function takes in a database connection, the name of the
+// stored procedure to call, and a json string as input
+// It returns the result of the stored procedure call as a
+// json string and any error that occurs
 // ============================================================================
 func (p *PostgresProperties) CallStoredProc(conn *sql.DB, funcName string, query string) (string, error) {
 	_jsonResult, _err := CallStoredProc(conn, funcName, query)
@@ -94,7 +101,7 @@ func GenerateStoredProcWrapper(procName string, jsonInput string) (string, error
 // _contacts_email TEXT := input::json#>>'{contacts, email}';
 // ============================================================================
 func generateParamsFromMap(prefix, output string, _data map[string]any) (string, error) {
-	if prefix == "" { // && prefix[0] != 'v' { // which means it is the first level
+	if prefix == "" {
 		prefix = "v" + prefix
 	}
 	for _key, _value := range _data {

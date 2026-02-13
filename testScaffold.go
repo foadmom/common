@@ -45,7 +45,10 @@ type envConfig struct {
 }
 
 var _logger l.LoggerInterface
-var LoggerConfig l.Config = l.Config{true, false, true, "./", "testScaffold.log", 100, 7, 30}
+var LoggerConfig l.Config = l.Config{ConsoleLoggingEnabled: true,
+	EncodeLogsAsJson: false, FileLoggingEnabled: true,
+	Directory: "./", Filename: "testScaffold.log",
+	MaxSize: 100, MaxBackups: 7, MaxAge: 30}
 
 // // Enable console logging
 // ConsoleLoggingEnabled bool
@@ -76,7 +79,6 @@ func main() {
 		_logger.Printf(l.Fatal, "Failed to get config: %v", _err)
 		return
 	}
-	// json_iterator()
 	// TestcHttp()
 	TestSQL(_config)
 	// testGenerateStoredProcWrapper()
@@ -106,20 +108,30 @@ func commandLineArgs() {
 // ============================================================================
 func getConfigFromFile(fileName string) (envConfig, error) {
 	var _err error
+	var _found bool
 	var _envConfig envConfig = envConfig{}
 	ConfigData, _err = config.ReadConfigFile(ConfigFile)
 
+	// unmarshal the config data into a map to get the environment specific config
 	var _data map[string]interface{}
 	_err = json.Unmarshal([]byte(ConfigData), &_data)
 	if _err == nil {
-		_myEnv, _found := _data["Environment"].(map[string]interface{})
+		// get the environment specific config
+		var _myEnv map[string]interface{}
+
+		_myEnv, _found = _data["Environment"].(map[string]interface{})
 		if _found {
+			// get the config for the specified environment, like Dev or Prod
 			_myEnv, _found = _myEnv[Env].(map[string]interface{})
 			if _found {
+				// convert map to json and then unmarshal it into the envConfig struct
 				var _envConfigJson []byte
 				_envConfigJson, _err = json.Marshal(_myEnv)
 				_err = json.Unmarshal(_envConfigJson, &_envConfig)
 			}
+		}
+		if !_found {
+			_err = fmt.Errorf("environment %s not found in config file", Env)
 		}
 	}
 	if _err != nil {
