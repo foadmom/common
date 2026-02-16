@@ -81,7 +81,7 @@ func main() {
 	}
 	// TestcHttp()
 	TestSQL(_config)
-	// testGenerateStoredProcWrapper()
+	testGenerateStoredProcWrapper()
 }
 
 type configLevel struct {
@@ -195,4 +195,35 @@ func TestSQL(config envConfig) {
 	_logger.Printf(l.Info, "Stored Procedure Result: %s\n", jsonResult)
 
 	_logger.Print(l.Trace, "exiting TestSQL")
+}
+
+// CREATE TABLE network.service_link (
+//     id              BIGSERIAL PRIMARY KEY,
+//     service_id      BIGINT REFERENCES network.service(id),
+//     from_stop_id    BIGINT REFERENCES network.stop(id),
+//     to_stop_id      BIGINT REFERENCES network.stop(id),
+//     distance_meters INTEGER,
+//     sequence_order  INTEGER NOT NULL,
+
+var jsonInput string = `{
+  "service_code": "NX230_S",
+  "from_stop_code": "DGBT",
+  "to_stop_code": "COVCEN",
+  "facilities": {
+    "toilet": true,
+    "bar": true,
+    "cafe": true
+  },
+  "distance_meters": 20000,
+  "sequence_order": 1
+}`
+
+func testGenerateStoredProcWrapper() {
+	// this is a sample json input for the stored procedure wrapper generator
+	procWrapper, err := q.GenerateStoredProcWrapper("network.service_link_insert", jsonInput)
+	if err != nil {
+		_logger.Printf(l.Error, "Error generating stored procedure wrapper: %v", err)
+	} else {
+		_logger.Printf(l.Info, "Generated stored procedure wrapper: %s", procWrapper)
+	}
 }
