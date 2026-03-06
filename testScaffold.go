@@ -48,7 +48,7 @@ var _logger l.LoggerInterface
 var LoggerConfig l.Config = l.Config{ConsoleLoggingEnabled: true,
 	EncodeLogsAsJson: false, FileLoggingEnabled: true,
 	Directory: "./", Filename: "testScaffold.log",
-	MaxSize: 100, MaxBackups: 7, MaxAge: 30}
+	MaxSize: 10, MaxBackups: 1, MaxAge: 7}
 
 // // Enable console logging
 // ConsoleLoggingEnabled bool
@@ -132,6 +132,7 @@ func getConfigFromFile(fileName string) (envConfig, error) {
 		}
 		if !_found {
 			_err = fmt.Errorf("environment %s not found in config file", Env)
+			_logger.Printf(l.Fatal, "environment %s not found in config file", Env)
 		}
 	}
 	if _err != nil {

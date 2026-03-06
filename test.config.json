@@ -18,6 +18,10 @@
 				"Password"  : "postgres", 
 				"Database"  : "transmodel", 
 				"Schema"    : "common"
+			},
+			"Nats":
+			{
+				"URL": "nats://nats_server:4222"
 			}
 		},
 		"Test":
@@ -37,6 +41,10 @@
 				"Password"  : "postgres", 
 				"Database"  : "transmodel", 
 				"Schema"    : "common"
+			},
+			"Nats":
+			{
+				"URL": "nats://nats_server:4222"
 			}
 		}
 
