@@ -3,6 +3,7 @@ package config
 import (
 	"encoding/json"
 	"os"
+	"strings"
 
 	l "github.com/foadmom/common/logger"
 )
@@ -79,9 +80,67 @@ func ReadConfigFile(fullPathAndFileName string) (string, error) {
 }
 
 // ==================================================================
-//
+// this is a common function to map a JSON string to any struct
 // ==================================================================
 func MapConfig(configStr string, configObj interface{}) error {
 	_err := json.Unmarshal([]byte(configStr), configObj)
 	return _err
+}
+
+// ==================================================================
+// looks for a key in the nested map and returns a
+// map[string]interface{} for the key.
+// ==================================================================
+func FindValueInJson(jsonStr, key string) (map[string]interface{}, bool) {
+	var _mapData map[string]interface{}
+	var _exists bool = false
+
+	_keys := strings.Split(key, ".")
+	err := json.Unmarshal([]byte(jsonStr), &_mapData)
+
+	if err == nil {
+		for _, k := range _keys {
+			_mapData, _exists = SearchForKeyInMap(_mapData, k)
+			if !_exists {
+				return nil, false
+			}
+		}
+	}
+	return _mapData, _exists
+}
+
+// ==================================================================
+// cheks if the key exists in the map and if it does.
+// ==================================================================
+func SearchForKeyInMap(thisMap map[string]interface{}, key string) (map[string]interface{}, bool) {
+	var exists bool
+
+	value, exists := thisMap[key]
+	if exists {
+		_result, ok := value.(map[string]interface{})
+		if ok {
+			return _result, true
+		}
+	}
+	return nil, false
+}
+
+// ==================================================================
+// find a nested JSON object for the compound key and return it as a JSON string
+// eg key can be Environment.Database and it will return the JSON string for that category
+// ==================================================================
+func FindKeyedSubJson(fileName, key string) ([]byte, error) {
+	var _jsonString string
+	var _err error
+	var _jResult []byte
+
+	_jsonString, _err = ReadConfigFile(fileName)
+	if _err == nil {
+		_mapData, _exists := FindValueInJson(_jsonString, key)
+		if _exists {
+			_jResult, _err = json.Marshal(_mapData)
+			return _jResult, _err
+		}
+	}
+	return nil, _err
 }
