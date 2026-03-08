@@ -1,13 +1,19 @@
 {
 	"Environment":
+	"Environment":
 	{
 		"Dev":
+		"Dev":
 		{
+			"HTTP":
 			"HTTP":
 			{
 				"Host": "localhost",
 				"Port": "8001"
+				"Host": "localhost",
+				"Port": "8001"
 			},
+			"Database": 
 			"Database": 
 			{
 				"Name"      : "localPostgres",

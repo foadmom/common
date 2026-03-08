@@ -2,6 +2,7 @@ package config
 
 import (
 	"encoding/json"
+	"fmt"
 	"os"
 	"strings"
 
@@ -143,4 +144,52 @@ func FindKeyedSubJson(fileName, key string) ([]byte, error) {
 		}
 	}
 	return nil, _err
+}
+
+// ============================================================================
+// this is just to test the config package and make sure it can read the
+// config file and unmarshal it into the map[string]interface{}
+// ============================================================================
+func GetConfigFromFile(fileName string) (map[string]interface{}, error) {
+	var _err error
+	var ConfigData string
+
+	// var _envConfig envConfig = envConfig{}
+	ConfigData, _err = ReadConfigFile(fileName)
+
+	// unmarshal the config data into a map to get the environment specific config
+	var _data map[string]interface{}
+	_err = json.Unmarshal([]byte(ConfigData), _data)
+	if _err != nil {
+		_logger.Printf(l.Fatal, "unable to process config file: %v", _err)
+	}
+	return _data, _err
+}
+
+// ============================================================================
+// search the map for a keyed nested map and return it as a map[string]interface{}
+// ============================================================================
+func GetKeyMap(data map[string]interface{}, key string) (map[string]interface{}, error) {
+	var _err error
+	var _found bool
+
+	var value map[string]interface{}
+
+	value, _found = data[key].(map[string]interface{})
+	if !_found {
+		_err = fmt.Errorf("key %s not found in the map", key)
+		_logger.Printf(l.Fatal, "environment %s not found in config file", key)
+	}
+	return value, _err
+}
+
+// ============================================================================
+//
+// ============================================================================
+func GetKeyedStringValue(data map[string]string, key string) (string, bool) {
+	_value, _found := data[key] // .(map[string]interface{})
+	if !_found {
+		_logger.Printf(l.Info, "environment %s not found in config file", key)
+	}
+	return _value, _found
 }
