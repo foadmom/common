@@ -75,7 +75,7 @@ func GetConfigValue(env, cat, key string) (string, error) {
 func ReadConfigFile(fullPathAndFileName string) (string, error) {
 	_config, _err := os.ReadFile(fullPathAndFileName)
 	if _err != nil {
-		_logger.Printf(l.Fatal, "unable to read file: %v", _err)
+		_logger.Printf(l.Info, "unable to read file: %v", _err)
 	}
 	return string(_config), _err
 }

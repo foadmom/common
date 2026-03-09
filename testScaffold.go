@@ -106,7 +106,7 @@ func main() {
 }
 
 func testFindValueInJson() {
-	_json, _err := c.FindKeyedSubJson("test.config.json", "Environment.Dev.Nats")
+	_json, _err := c.FindKeyedSubJson("config.json", "Environment.Dev.Nats")
 	if _err == nil {
 		fmt.Printf("NATS Config JSON: %s\n", string(_json))
 	} else {
