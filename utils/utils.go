@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"math/rand"
 	"os"
-	"time"
 
 	"github.com/google/uuid"
 	"github.com/skip2/go-qrcode"
@@ -47,7 +46,7 @@ func GenerateUUID() (string, error) {
 // so the random int is anything from lower to upper-1
 // ========================================================
 func GenerateRandomInt(lower int, upper int) int {
-	rand.Seed(time.Now().UnixNano())
+	// rand.Seed(time.Now().UnixNano())
 	var _rand int = rand.Intn(upper-lower) + lower
 	return _rand
 }
