@@ -2,7 +2,9 @@ package utils
 
 import (
 	"fmt"
+	"log"
 	"math/rand"
+	"net"
 	"os"
 
 	"github.com/google/uuid"
@@ -46,7 +48,6 @@ func GenerateUUID() (string, error) {
 // so the random int is anything from lower to upper-1
 // ========================================================
 func GenerateRandomInt(lower int, upper int) int {
-	// rand.Seed(time.Now().UnixNano())
 	var _rand int = rand.Intn(upper-lower) + lower
 	return _rand
 }
@@ -78,4 +79,16 @@ func QRCode(content string, size int) ([]byte, error) {
 	_codeData, _err = _qrCode.Generate()
 
 	return _codeData, _err
+}
+
+// ==================================================================
+//
+// ==================================================================
+func IPAddresses(hostname string) ([]net.IP, error) {
+	_addrs, _error := net.LookupIP(hostname)
+	// lookupIP looks up host using the local resolver.
+	if _error != nil {
+		log.Println("Failed to detect machine host name. ", _error.Error())
+	}
+	return _addrs, _error
 }
