@@ -32,7 +32,8 @@ type raftCommsStruct struct {
 var raftComms raftCommsStruct = raftCommsStruct{}
 
 // ======================================================
-// init initializes package-level variables
+// init initializes package-level variables at startup.
+// In this case, it initializes the Channels map to store information about subscribed channels.
 // ======================================================
 func init() {
 	raftComms.Channels = make(map[string]channelType)
@@ -79,7 +80,7 @@ func (raftCommsStruct) Init(config string) error {
 }
 
 // ======================================================
-// Close closes the NATS connection
+// Close closes the NATS connection.
 // ======================================================
 func (raftCommsStruct) Close() {
 	raftComms.Cleanup()
@@ -91,8 +92,13 @@ func (raftCommsStruct) Close() {
 
 // ======================================================
 // Send sends a message to a specified channel. This is
-// different from publishing to a queue group and only.
-// this message will go to all subscribers of the channel.
+// different from publishing to a queue group and only
+// sends the message to subscribers of the channel.
+// In a real implementation, you might want to add error
+// handling and retry logic here to ensure that messages are
+// not lost due to transient connection issues.
+// You could also consider adding support for message
+// acknowledgments to ensure reliable delivery.
 // ======================================================
 func (raftCommsStruct) Send(message []byte, channel string) error {
 	fmt.Println("Send message:", string(message))
@@ -101,7 +107,7 @@ func (raftCommsStruct) Send(message []byte, channel string) error {
 }
 
 // ======================================================
-// Subscribe subscribes to a specified channel with a
+// Subscribe subscribes to a specified channel
 // ======================================================
 func (raftCommsStruct) Subscribe(channel string, goChan chan []byte) error {
 	var _handler nats.MsgHandler = func(msg *nats.Msg) {

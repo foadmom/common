@@ -58,19 +58,19 @@ func GetConfigEnv(env string) (string, error) {
 // ==================================================================
 // returns a JSON or any other format, eg YAML, as string
 // ==================================================================
-func GetConfigCategory(env, cat string) (string, error) {
-	return "", nil
-}
+// func GetConfigCategory(env, cat string) (string, error) {
+// 	return "", nil
+// }
 
 // ==================================================================
-//
+// returns a JSON or any other format, eg YAML, as string
 // ==================================================================
 func GetConfigValue(env, cat, key string) (string, error) {
 	return "", nil
 }
 
 // ==================================================================
-//
+// this is a common function to read a config file and return its content as a string
 // ==================================================================
 func ReadConfigFile(fullPathAndFileName string) (string, error) {
 	_config, _err := os.ReadFile(fullPathAndFileName)
@@ -111,7 +111,8 @@ func FindValueInJson(jsonStr, key string) (map[string]interface{}, bool) {
 }
 
 // ==================================================================
-// cheks if the key exists in the map and if it does.
+// searches for a key in the map and returns the value as a
+// map[string]interface{} and true if found, otherwise returns nil and false
 // ==================================================================
 func SearchForKeyInMap(thisMap map[string]interface{}, key string) (map[string]interface{}, bool) {
 	var exists bool
@@ -184,7 +185,7 @@ func GetKeyMap(data map[string]interface{}, key string) (map[string]interface{},
 }
 
 // ============================================================================
-//
+// search the map for a keyed value and return it as a string
 // ============================================================================
 func GetKeyedStringValue(data map[string]string, key string) (string, bool) {
 	_value, _found := data[key] // .(map[string]interface{})

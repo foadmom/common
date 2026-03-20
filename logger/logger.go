@@ -52,6 +52,12 @@ type LoggerInterface interface {
 
 var LogLevel int = Trace
 
+// ===============================================================
+// SetLogLevel sets the log level for the logger.
+// Only messages with a level equal to or higher than the set level will be logged.
+// For example, if the log level is set to Warning, only messages with levels
+// Warning, Error, Fatal, and Panic will be logged, while Info and Debug messages will be ignored.
+// ===============================================================
 func SetLogLevel(level int) {
 	LogLevel = level
 }

@@ -17,15 +17,15 @@ import (
 const VERSION = "V1.0"
 
 type MessageHeader struct {
-	UUID       string    `json:"UUID"`		// * added automatically, a function will generate this. 
-							//   Unless one has already been passed to you from above
-	SequenceID int       `json:"sequenceID"`	//   only if there are multiple message in one transaction
-	Version    string    `json:"version"`		// * Should be set by calling app
-	Host       string    `json:"host"`		// * Should be added automatically by the app
-	Process    string    `json:"process"`		//   calling application name. Should be set automatically
-	UserID     string    `json:"userId"`		//   only used when API authentication is needed
+	UUID string `json:"UUID"` // * added automatically, a function will generate this.
+	//   Unless one has already been passed to you from above
+	SequenceID int       `json:"sequenceID"` //   only if there are multiple message in one transaction
+	Version    string    `json:"version"`    // * Should be set by calling app
+	Host       string    `json:"host"`       // * Should be added automatically by the app
+	Process    string    `json:"process"`    //   calling application name. Should be set automatically
+	UserID     string    `json:"userId"`     //   only used when API authentication is needed
 	Password   string    `json:"password"`
-	TimeStamp  time.Time `json:"timestamp"`		// * set automatically to Now ()
+	TimeStamp  time.Time `json:"timestamp"` // * set automatically to Now ()
 }
 
 type Payload struct {
@@ -39,7 +39,9 @@ type GenericMessage struct {
 }
 
 // ========================================================
-//
+// create and instance of MessageHeader with whatever
+// defaults we know before specifics are populated by
+// the app
 // ========================================================
 func (h *MessageHeader) Instance() error {
 	var _err error

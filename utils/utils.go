@@ -15,14 +15,15 @@ import (
 var HOSTNAME string = ""
 
 // ========================================================
-//
+// initializes the HOSTNAME variable with the machine's hostname.
+// This is not really needed, but it can be useful for logging or debugging purposes.
 // ========================================================
 func init() {
 	HOSTNAME, _ = os.Hostname() // not really needed
 }
 
 // ========================================================
-//
+// returns the machine's hostname. If the HOSTNAME variable is empty, it initializes it first.
 // ========================================================
 func HostName() string {
 	if HOSTNAME == "" {
@@ -32,7 +33,7 @@ func HostName() string {
 }
 
 // ========================================================
-//
+// generates a UUID string. This can be used for generating unique IDs for nodes, messages, etc.
 // ========================================================
 func GenerateUUID() (string, error) {
 	var _uuid uuid.UUID
