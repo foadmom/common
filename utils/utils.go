@@ -93,3 +93,16 @@ func IPAddresses(hostname string) ([]net.IP, error) {
 	}
 	return _addrs, _error
 }
+
+// ==================================================================
+// Generates a random string of specified length
+// ==================================================================
+func GenerateUniqueString(length int) string {
+	const charset = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
+	result := make([]byte, length)
+	for i := 0; i < length; i++ {
+		result[i] = charset[rand.IntN(len(charset))]
+	}
+	fmt.Println(string(result))
+	return string(result)
+}
