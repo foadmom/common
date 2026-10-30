@@ -43,10 +43,10 @@ func init() {
 // ============================================================================
 // This function takes in the database properties and sets up the connection string
 // ============================================================================
-func (p *PostgresDB) Setup(prop DBProperties) {
+func (p *PostgresDB) Setup(prop *DBProperties) {
 	prop.ConnString = fmt.Sprintf("postgres://%s:%s@%s:%s/%s", prop.User,
 		prop.Password, prop.Host, prop.Port, prop.Database)
-	AddDBProperty(prop)
+	AddDBProperty(*prop)
 }
 
 // ============================================================================

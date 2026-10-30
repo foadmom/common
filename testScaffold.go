@@ -174,7 +174,7 @@ func TestSQL(config envConfig) {
 	_logger.Print(l.Trace, "starting TestSQL")
 	var _post q.PostgresDB = q.PostgresDB{}
 
-	_post.Setup(config.Database)
+	_post.Setup(&config.Database)
 
 	conn, err := _post.Connect(config.Database.Name)
 	if err != nil {
