@@ -10,7 +10,7 @@ import (
 	_ "github.com/jackc/pgx/v5/stdlib"
 )
 
-type PostgresProperties struct{}
+type PostgresDB struct{}
 
 type PostgresException struct {
 	Returned_sqlstate    string `json:"RETURNED_SQLSTATE"`
@@ -26,6 +26,7 @@ type PostgresException struct {
 }
 
 var psgLogger l.LoggerInterface
+var conn *sql.DB
 
 // ============================================================================
 // ============================================================================
@@ -42,7 +43,7 @@ func init() {
 // ============================================================================
 // This function takes in the database properties and sets up the connection string
 // ============================================================================
-func (p *PostgresProperties) Setup(prop DBProperties) {
+func (p *PostgresDB) Setup(prop DBProperties) {
 	prop.ConnString = fmt.Sprintf("postgres://%s:%s@%s:%s/%s", prop.User,
 		prop.Password, prop.Host, prop.Port, prop.Database)
 	AddDBProperty(prop)
@@ -52,14 +53,16 @@ func (p *PostgresProperties) Setup(prop DBProperties) {
 // Establishes a connection to the database using the provided properties and
 // returns the connection object
 // ============================================================================
-func (p *PostgresProperties) Connect(name string) (*sql.DB, error) {
+func (p *PostgresDB) Connect(name string) (*sql.DB, error) {
+	var _err error
+
 	_pgx := GetDBProperty(name)
-	_conn, _err := Connect(&_pgx)
+	conn, _err = Connect(&_pgx)
 
 	if _err != nil {
 		psgLogger.Printf(l.Error, "Unable to connect to database: %s\n", _err.Error())
 	}
-	return _conn, _err
+	return conn, _err
 }
 
 // ============================================================================
@@ -68,7 +71,7 @@ func (p *PostgresProperties) Connect(name string) (*sql.DB, error) {
 // It returns the result of the stored procedure call as a
 // json string and any error that occurs
 // ============================================================================
-func (p *PostgresProperties) CallStoredProc(conn *sql.DB, funcName string, query string) (string, error) {
+func (p *PostgresDB) CallStoredProc(conn *sql.DB, funcName string, query string) (string, error) {
 	_jsonResult, _err := CallStoredProc(conn, funcName, query)
 	return _jsonResult, _err
 }

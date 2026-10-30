@@ -172,7 +172,7 @@ func localHttpHandler(w http.ResponseWriter, req *http.Request) {
 func TestSQL(config envConfig) {
 	_logger = l.Instance()
 	_logger.Print(l.Trace, "starting TestSQL")
-	var _post q.PostgresProperties = q.PostgresProperties{}
+	var _post q.PostgresDB = q.PostgresDB{}
 
 	_post.Setup(config.Database)
 

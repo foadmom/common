@@ -99,9 +99,10 @@ func IPAddresses(hostname string) ([]net.IP, error) {
 // ==================================================================
 func GenerateUniqueString(length int) string {
 	const charset = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
+	var charSetLength = len(charset)
 	result := make([]byte, length)
 	for i := 0; i < length; i++ {
-		result[i] = charset[rand.IntN(len(charset))]
+		result[i] = charset[rand.Intn(charSetLength)]
 	}
 	fmt.Println(string(result))
 	return string(result)

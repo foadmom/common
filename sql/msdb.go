@@ -8,9 +8,11 @@ import (
 	_ "github.com/microsoft/go-mssqldb"
 )
 
-type MsSqlProperties DBProperties
+// type MsSqlDB DBProperties
+type MsSqlDB struct{}
 
 var sqlserverLogger l.LoggerInterface
+var sqlMS DBProperties
 
 // ============================================================================
 //
@@ -21,17 +23,17 @@ func init() {
 
 	// "sqlserver://SA:myStrong(!)Password@localhost:1433?database=tempdb"
 
-	var _sqlMS MsSqlProperties = MsSqlProperties{"localMsSQL", "pgx", "localhost", "5432",
+	sqlMS = DBProperties{"localMsSQL", "pgx", "localhost", "5432",
 		"SA", "Pa55w0rd", "", "postgres", ""}
-	_sqlMS.ConnString = fmt.Sprintf("sqlserver://%s:%s@%s:%s/%s", _sqlMS.User, _sqlMS.Password, _sqlMS.Host, _sqlMS.Port, _sqlMS.Database)
-	DBServers[_sqlMS.Name] = DBProperties(_sqlMS)
+	sqlMS.ConnString = fmt.Sprintf("sqlserver://%s:%s@%s:%s/%s", sqlMS.User, sqlMS.Password, sqlMS.Host, sqlMS.Port, sqlMS.Database)
+	DBServers[sqlMS.Name] = DBProperties(sqlMS)
 }
 
 // ============================================================================
 //
 // ============================================================================
-func (ms *MsSqlProperties) NewConnection() (*sql.DB, error) {
-	_mssql := GetDBProperty(ms.Name)
+func (ms *MsSqlDB) NewConnection() (*sql.DB, error) {
+	_mssql := GetDBProperty(sqlMS.Name)
 	_conn, _err := Connect(&_mssql)
 	if _err != nil {
 		sqlserverLogger.Printf(l.Error, "Unable to connect to database: %s", _err.Error())
@@ -42,7 +44,7 @@ func (ms *MsSqlProperties) NewConnection() (*sql.DB, error) {
 // ============================================================================
 //
 // ============================================================================
-func (ms *MsSqlProperties) CallStoredProc(conn *sql.DB, funcName string, query string) (string, error) {
+func (ms *MsSqlDB) CallStoredProc(conn *sql.DB, funcName string, query string) (string, error) {
 	_jsonResult, _err := CallStoredProc(conn, funcName, query)
 
 	return _jsonResult, _err
